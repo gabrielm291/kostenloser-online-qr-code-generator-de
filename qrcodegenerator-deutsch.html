@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vollbild QR-Code Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 100%;
+    height: 100%;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f0f2f5;
+  }
+
+  .container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+
+  h1 {
+    font-size: 36px;
+    color: #222;
+    margin-bottom: 30px;
+    text-align: center;
+  }
+
+  .controls {
+    background: rgba(255,255,255,0.95);
+    padding: 25px 30px;
+    border-radius: 20px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+    max-width: 500px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  input[type="text"], input[type="file"], select, input[type="color"], button {
+    padding: 12px 15px;
+    border-radius: 12px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    width: 100%;
+  }
+
+  input[type="color"] {
+    width: 50px;
+    height: 40px;
+    padding: 0;
+    border: none;
+    cursor: pointer;
+  }
+
+  button {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  button:hover {
+    background-color: #45a049;
+  }
+
+  #qrCanvas {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .download-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+  }
+
+  .download-buttons button {
+    width: 48%;
+    background-color: #2196F3;
+  }
+
+  .download-buttons button:hover {
+    background-color: #0b7dda;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>QR-Code Generator</h1>
+
+  <div class="controls">
+    <input type="text" id="qrText" placeholder="Link eingeben z.B. https://example.com">
+    
+    <div style="display:flex; gap:10px; align-items:center;">
+      <label>Punkte-Farbe:</label>
+      <input type="color" id="qrColor" value="#000000">
+    </div>
+
+    <div style="display:flex; gap:10px; align-items:center;">
+      <label>Hintergrund:</label>
+      <input type="color" id="qrBgColor" value="#ffffff">
+    </div>
+
+    <select id="qrShape">
+      <option value="square">Quadratische Pixel</option>
+      <option value="rounded">Abgerundete Pixel</option>
+      <option value="dots">Runde Punkte</option>
+    </select>
+
+    <input type="file" id="qrLogo" accept="image/*">
+    
+    <button onclick="generateQRCode()">QR-Code generieren</button>
+    
+    <div class="download-buttons">
+      <button onclick="downloadQRCode('png')">Download PNG</button>
+      <button onclick="downloadQRCode('jpeg')">Download JPEG</button>
+    </div>
+  </div>
+
+  <div id="qrCanvas"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
+<script>
+let qr;
+
+function generateQRCode() {
+    const text = document.getElementById('qrText').value;
+    const color = document.getElementById('qrColor').value;
+    const bgColor = document.getElementById('qrBgColor').value;
+    const shape = document.getElementById('qrShape').value;
+    const logoFile = document.getElementById('qrLogo').files[0];
+
+    if(!text) {
+        alert("Bitte zuerst einen Link eingeben!");
+        return;
+    }
+
+    const qrContainer = document.getElementById('qrCanvas');
+    qrContainer.innerHTML = "";
+
+    let logoUrl = "";
+    if(logoFile) {
+        logoUrl = URL.createObjectURL(logoFile);
+    }
+
+    qr = new QRCodeStyling({
+        width: 400,
+        height: 400,
+        data: text,
+        dotsOptions: {
+            color: color,
+            type: shape
+        },
+        backgroundOptions: {
+            color: bgColor
+        },
+        image: logoUrl ? logoUrl : undefined,
+        imageOptions: {
+            crossOrigin: "anonymous",
+            margin: 5,
+            imageSize: 0.2 // Logo 20% der QR-Größe
+        }
+    });
+
+    qr.append(qrContainer);
+}
+
+function downloadQRCode(type) {
+    if(!qr) {
+        alert("Bitte zuerst einen QR-Code generieren!");
+        return;
+    }
+    qr.download({ extension: type });
+}
+</script>
+
+</body>
+</html>
